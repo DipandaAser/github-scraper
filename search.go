@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"math"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -44,9 +45,9 @@ func buildSearchUrl(query string, typee searchMode, opt sortOptions) string {
 
 	switch typee {
 	case searchModeMarketPlace, searchModeTopics:
-		return githubBaseUrl + fmt.Sprintf("/search?q=%s&type=%s", query, typee)
+		return githubBaseUrl + url.QueryEscape(fmt.Sprintf("/search?q=%s&type=%s", query, typee))
 	default:
-		return githubBaseUrl + fmt.Sprintf("/search?o=%s&q=%s&s=%s&type=%s", opt.getOrder(), query, opt.name, typee)
+		return githubBaseUrl + url.QueryEscape(fmt.Sprintf("/search?o=%s&q=%s&s=%s&type=%s", opt.getOrder(), query, opt.name, typee))
 	}
 }
 
