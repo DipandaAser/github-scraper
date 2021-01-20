@@ -90,7 +90,8 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 
 			doc.Find("li.repo-list-item > div.mt-n1").Each(func(i int, selection *goquery.Selection) {
 				var repo Repository
-				repo.Name, _ = selection.Find("a").Attr("href")                                    //repo name
+				repo.Name, _ = selection.Find("a").Attr("href") //repo name
+				repo.Url = githubBaseUrl + repo.Name
 				repo.Description = selection.Find("p.mb-1").Text()                                 //description
 				repo.Stars = selection.Find("div.mr-3 > a.muted-link").Text()                      //stars
 				repo.ProgrammingLanguage = selection.Find("[itemprop=programmingLanguage]").Text() //programmingLanguage
