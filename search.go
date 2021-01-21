@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"math"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -32,6 +33,19 @@ type Commit struct {
 	CommitMessage  string
 	Author         string
 	CommitDate     string
+	Error          error
+}
+
+type Issue struct {
+	RepositoryName string
+	RepositoryLink string
+	Link           string
+	Title          string
+	Description    string
+	Status         string
+	IsPullRequest  bool
+	Author         string
+	Date           string
 	Error          error
 }
 
@@ -171,4 +185,60 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 //SearchCommits wrapper for default Scraper
 func SearchCommits(opt sortOptions, query string, maxResult int) <-chan *Commit {
 	return defaultScraper.SearchCommits(opt, query, maxResult)
+}
+
+// SearchIssues returns channel with Issue for a given search query
+func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-chan *Issue {
+	channel := make(chan *Issue)
+
+	go func() {
+		defer close(channel)
+		url := buildSearchUrl(query, searchModeIssues, opt)
+		maxpage := getMaxPage(maxResult)
+		for page := 1; page <= maxpage; page++ {
+			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
+			if err != nil {
+				channel <- &Issue{Error: err}
+				return
+			}
+
+			if !successfulLoaded(res) {
+				channel <- &Issue{Error: errors.New("Failed to load page")}
+				return
+			}
+
+			doc, err := goquery.NewDocumentFromReader(res.Body)
+			if err != nil {
+				channel <- &Issue{Error: errors.New("Failed to read page")}
+				return
+			}
+
+			doc.Find("div.issue-list-item").Each(func(i int, selection *goquery.Selection) {
+				var issue Issue
+				issue.RepositoryName, _ = selection.Find("a.muted-link.text-bold").Attr("data-hovercard-url")
+				issue.RepositoryLink = githubBaseUrl + issue.RepositoryName
+				iLink, _ := selection.Find("div.f4 > a").Attr("href")
+				issue.Link = githubBaseUrl + iLink
+				issue.Title, _ = selection.Find("div.f4 > a").Attr("title")
+				issue.Description = selection.Find("p.mb-0").Text()
+
+				iconClasses, _ := selection.Find("svg.octicon").Attr("class")
+				classes := strings.Split(iconClasses, " ")
+				if len(classes) >= 3 {
+					issue.Status = classes[2]
+				}
+
+				if strings.Contains(iconClasses, "pull-request") {
+					issue.IsPullRequest = true
+				}
+
+				issue.Author = selection.Find("div.d-inline > a.text-bold.muted-link").Text()
+				issue.Date, _ = selection.Find("relative-time").Attr("datetime")
+
+				channel <- &issue
+			})
+			res.Body.Close()
+		}
+	}()
+	return channel
 }
