@@ -13,6 +13,10 @@ var (
 	RepositoryFewestForks          = sortOptions{name: "fork", order: 0}
 	RepositoryRecentlyUpdated      = sortOptions{name: "updated", order: 1}
 	RepositoryLeastRecentlyUpdated = sortOptions{name: "updated", order: 0}
+	CommitRecentlyCommitted        = sortOptions{name: "committer-date", order: 1}
+	CommitLeastRecentlyCommitted   = sortOptions{name: "committer-date", order: 0}
+	CommitRecentlyAuthored         = sortOptions{name: "author-date", order: 1}
+	CommitLeastRecentlyAuthored    = sortOptions{name: "author-date", order: 0}
 )
 
 func (so *sortOptions) getOrder() string {
