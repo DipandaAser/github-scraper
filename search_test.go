@@ -16,3 +16,16 @@ func TestScraper_SearchRepositories(t *testing.T) {
 		}
 	})
 }
+
+func TestScraper_SearchCommits(t *testing.T) {
+	t.Run("Test SearchCommits", func(t *testing.T) {
+		s := New()
+		repoCount := 0
+		for _ = range s.SearchCommits(DefaultSortOption, "go", 20) {
+			repoCount++
+		}
+		if repoCount < 20 {
+			t.Fatal("SearchCommits faild. Can't get 20 items.")
+		}
+	})
+}
