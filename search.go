@@ -242,3 +242,8 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 	}()
 	return channel
 }
+
+// SearchIssues wrapper for default Scraper
+func SearchIssues(opt sortOptions, query string, maxResult int) <-chan *Issue {
+	return defaultScraper.SearchIssues(opt, query, maxResult)
+}
