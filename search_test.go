@@ -42,3 +42,16 @@ func TestScraper_SearchIssues(t *testing.T) {
 		}
 	})
 }
+
+func TestScraper_SearchUsers(t *testing.T) {
+	t.Run("Test SearchUsers", func(t *testing.T) {
+		s := New()
+		count := 0
+		for _ = range s.SearchUsers(DefaultSortOption, "go", 20) {
+			count++
+		}
+		if count < 20 {
+			t.Fatal("SearchUsers faild. Can't get 20 items.")
+		}
+	})
+}
