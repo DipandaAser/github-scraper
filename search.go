@@ -6,6 +6,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"math"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -47,6 +48,16 @@ type Issue struct {
 	Author         string
 	Date           string
 	Error          error
+}
+
+type User struct {
+	Name     string
+	Pseudo   string
+	Bio      string
+	Avatar   string
+	Link     string
+	Location string
+	Error    error
 }
 
 type searchMode string
@@ -246,4 +257,68 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 // SearchIssues wrapper for default Scraper
 func SearchIssues(opt sortOptions, query string, maxResult int) <-chan *Issue {
 	return defaultScraper.SearchIssues(opt, query, maxResult)
+}
+
+// SearchUsers returns channel with User for a given search query
+func (s *Scraper) SearchUsers(opt sortOptions, query string, maxResult int) <-chan *User {
+	channel := make(chan *User)
+
+	go func() {
+		defer close(channel)
+		urll := buildSearchUrl(query, searchModeUsers, opt)
+		maxPage := getMaxPage(maxResult)
+		for page := 1; page <= maxPage; page++ {
+			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
+			if err != nil {
+				channel <- &User{Error: err}
+				return
+			}
+
+			if !successfulLoaded(res) {
+				channel <- &User{Error: errors.New("Failed to load page")}
+				return
+			}
+
+			doc, err := goquery.NewDocumentFromReader(res.Body)
+			if err != nil {
+				channel <- &User{Error: errors.New("Failed to read page")}
+				return
+			}
+
+			doc.Find("div.user-list-item").Each(func(i int, selection *goquery.Selection) {
+				// if true is means that this selection is an organisation
+				if selection.Find("span.user-following-container").Text() == "" {
+					return
+				}
+
+				var user User
+				nameSelection := selection.Find("div.f4 > a.mr-1")
+				user.Name = nameSelection.Text()
+				user.Pseudo, _ = nameSelection.Attr("href")
+				user.Link = githubBaseUrl + user.Pseudo
+				user.Pseudo = strings.Replace(user.Pseudo, "/", "", -1)
+
+				user.Bio = selection.Find("p.mb-1").Text()
+				user.Location = selection.Find("div.mr-3").Text()
+
+				user.Avatar, _ = selection.Find("img.avatar-user").Attr("src")
+				if user.Avatar != "" {
+					u, _ := url.Parse(user.Avatar)
+					values, _ := url.ParseQuery(u.RawQuery)
+					values.Set("s", "500")
+					u.RawQuery = values.Encode()
+					user.Avatar = u.String()
+				}
+
+				channel <- &user
+			})
+			res.Body.Close()
+		}
+	}()
+	return channel
+}
+
+// SearchUsers wrapper for default Scraper
+func SearchUsers(opt sortOptions, query string, maxResult int) <-chan *User {
+	return defaultScraper.SearchUsers(opt, query, maxResult)
 }
