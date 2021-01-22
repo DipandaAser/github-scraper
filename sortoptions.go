@@ -22,4 +22,10 @@ var (
 	IssuesOldest                   = sortOptions{name: "created", order: "asc"}
 	IssuesRecentlyUpdated          = sortOptions{name: "updated", order: "desc"}
 	IssuesLeastRecentlyUpdated     = sortOptions{name: "updated", order: "asc"}
+	UserMostFollowers              = sortOptions{name: "followers", order: "desc"}
+	UserFewestFollowers            = sortOptions{name: "followers", order: "asc"}
+	UserMostRecentlyJoined         = sortOptions{name: "joined", order: "desc"}
+	UserLeastRecentlyJoined        = sortOptions{name: "joined", order: "asc"}
+	UserMostRepositories           = sortOptions{name: "repositories", order: "desc"}
+	UserFewestRepositories         = sortOptions{name: "repositories", order: "asc"}
 )
