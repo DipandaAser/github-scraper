@@ -70,7 +70,7 @@ func buildSearchUrl(query string, typee searchMode, opt sortOptions) string {
 	case searchModeMarketPlace, searchModeTopics:
 		return githubBaseUrl + fmt.Sprintf("/search?q=%s&type=%s", query, typee)
 	default:
-		return githubBaseUrl + fmt.Sprintf("/search?o=%s&q=%s&s=%s&type=%s", opt.getOrder(), query, opt.name, typee)
+		return githubBaseUrl + fmt.Sprintf("/search?o=%s&q=%s&s=%s&type=%s", opt.order, query, opt.name, typee)
 	}
 }
 
