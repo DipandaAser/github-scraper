@@ -102,6 +102,10 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 		url := buildSearchUrl(query, searchModeRepositories, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
+			if resultCount == maxResult {
+				channel <- &Repository{Error: errors.New("maxResult")}
+				return
+			}
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Repository{Error: err}
@@ -121,6 +125,9 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 			}
 
 			doc.Find("li.repo-list-item > div.mt-n1").Each(func(i int, selection *goquery.Selection) {
+				if resultCount == maxResult {
+					return
+				}
 				var repo Repository
 				repo.Name, _ = selection.Find("a").Attr("href") //repo name
 				repo.Url = githubBaseUrl + repo.Name
@@ -155,6 +162,10 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 		url := buildSearchUrl(query, searchModeCommits, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
+			if resultCount == maxResult {
+				channel <- &Commit{Error: errors.New("maxResult")}
+				return
+			}
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Commit{Error: err}
@@ -173,6 +184,9 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 			}
 
 			doc.Find("div.commits-list-item > div.mt-n1").Each(func(i int, selection *goquery.Selection) {
+				if resultCount == maxResult {
+					return
+				}
 				var commit Commit
 				commit.RepositoryName, _ = selection.Find("a.link-gray").Attr("href")
 				commit.RepositoryLink = githubBaseUrl + commit.RepositoryName
@@ -205,6 +219,10 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 		url := buildSearchUrl(query, searchModeIssues, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
+			if resultCount == maxResult {
+				channel <- &Issue{Error: errors.New("maxResult")}
+				return
+			}
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Issue{Error: err}
@@ -223,6 +241,9 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 			}
 
 			doc.Find("div.issue-list-item").Each(func(i int, selection *goquery.Selection) {
+				if resultCount == maxResult {
+					return
+				}
 				var issue Issue
 				issue.RepositoryName, _ = selection.Find("a.muted-link.text-bold").Attr("data-hovercard-url")
 				issue.RepositoryLink = githubBaseUrl + issue.RepositoryName
@@ -267,6 +288,10 @@ func (s *Scraper) SearchUsers(opt sortOptions, query string, maxResult int) <-ch
 		urll := buildSearchUrl(query, searchModeUsers, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
+			if resultCount == maxResult {
+				channel <- &User{Error: errors.New("maxResult")}
+				return
+			}
 			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &User{Error: err}
@@ -285,6 +310,9 @@ func (s *Scraper) SearchUsers(opt sortOptions, query string, maxResult int) <-ch
 			}
 
 			doc.Find("div.user-list-item").Each(func(i int, selection *goquery.Selection) {
+				if resultCount == maxResult {
+					return
+				}
 				// if true is means that this selection is an organisation
 				if selection.Find("span.user-following-container").Text() == "" {
 					return
