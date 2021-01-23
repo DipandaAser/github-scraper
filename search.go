@@ -15,15 +15,15 @@ const (
 )
 
 type Repository struct {
-	Name                string
-	Url                 string
-	Description         string
-	Topics              []string
-	Stars               string
-	Licence             string
-	ProgrammingLanguage string
-	UpdateTime          string
-	Error               error
+	Name                string   `json:"name"`
+	Url                 string   `json:"url"`
+	Description         string   `json:"description"`
+	Topics              []string `json:"topics"`
+	Stars               string   `json:"stars"`
+	Licence             string   `json:"licence"`
+	ProgrammingLanguage string   `json:"programming_language"`
+	UpdateTime          string   `json:"update_time"`
+	Error               error    `json:"error"`
 }
 
 type Commit struct {
