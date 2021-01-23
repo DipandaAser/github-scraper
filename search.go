@@ -23,7 +23,7 @@ type Repository struct {
 	Licence             string   `json:"licence"`
 	ProgrammingLanguage string   `json:"programming_language"`
 	UpdateTime          string   `json:"update_time"`
-	Error               error    `json:"error"`
+	Error               error
 }
 
 type Commit struct {
@@ -33,19 +33,19 @@ type Commit struct {
 	CommitMessage  string `json:"commit_message"`
 	Author         string `json:"author"`
 	CommitDate     string `json:"commit_date"`
-	Error          error  `json:"error"`
+	Error          error
 }
 
 type Issue struct {
-	RepositoryName string
-	RepositoryLink string
-	Link           string
-	Title          string
-	Description    string
-	Status         string
-	IsPullRequest  bool
-	Author         string
-	Date           string
+	RepositoryName string `json:"repository_name"`
+	RepositoryLink string `json:"repository_link"`
+	Link           string `json:"link"`
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	Status         string `json:"status"`
+	IsPullRequest  bool   `json:"is_pull_request"`
+	Author         string `json:"author"`
+	Date           string `json:"date"`
 	Error          error
 }
 
