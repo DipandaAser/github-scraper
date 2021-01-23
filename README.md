@@ -12,7 +12,7 @@ go get -u github.com/DipandaAser/github-scraper
 # Usage
 Let's start with a trivial example
 
-```go
+```golang
 package main
 
 import (
@@ -28,10 +28,52 @@ func main() {
 }
 ```
 
+## Available Methods
+
+
+#### * githubscraper.SearchRepositories()
+SortOptions:
+* `githubscraper.DefaultSortOption`
+* `githubscraper.RepositoryMostStars` 
+* `githubscraper.RepositoryFewestStars` 
+* `githubscraper.RepositoryMostForks` 
+* `githubscraper.RepositoryFewestForks` 
+* `githubscraper.RepositoryRecentlyUpdated` 
+
+
+#### * githubscraper.SearchUsers()
+SortOptions:
+* `githubscraper.DefaultSortOption`
+* `githubscraper.UserMostFollowers`
+* `githubscraper.UserFewestFollowers`
+* `githubscraper.UserMostRecentlyJoined`
+* `githubscraper.UserLeastRecentlyJoined`
+* `githubscraper.UserMostRepositories`
+* `githubscraper.UserFewestRepositories`
+
+
+#### * githubscraper.SearchCommits()
+SortOptions:
+* `githubscraper.DefaultSortOption`
+* `githubscraper.CommitRecentlyCommitted`
+* `githubscraper.CommitLeastRecentlyCommitted` 
+* `githubscraper.CommitRecentlyAuthored`
+* `githubscraper.CommitLeastRecentlyAuthored ` 
+
+
+#### * githubscraper.SearchIssues()
+SortOptions:
+* `githubscraper.DefaultSortOption`
+* `githubscraper.IssuesMostCommented`
+* `githubscraper.IssuesNewest`
+* `githubscraper.IssuesOldest`
+* `githubscraper.IssuesRecentlyUpdated`
+* `githubscraper.IssuesLeastRecentlyUpdated` 
+
 ## Default Scraper (Ad hoc)
 
 In simple cases, you can use the default scraper without creating an object instance
-```go
+```golang
 package main
 
 import (
