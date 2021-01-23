@@ -50,12 +50,12 @@ type Issue struct {
 }
 
 type User struct {
-	Name     string
-	Pseudo   string
-	Bio      string
-	Avatar   string
-	Link     string
-	Location string
+	Name     string `json:"name"`
+	Pseudo   string `json:"pseudo"`
+	Bio      string `json:"bio"`
+	Avatar   string `json:"avatar"`
+	Link     string `json:"link"`
+	Location string `json:"location"`
 	Error    error
 }
 
