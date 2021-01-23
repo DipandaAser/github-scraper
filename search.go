@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"math"
 	"net/http"
 	"net/url"
 	"strings"
@@ -75,6 +74,8 @@ const (
 	searchModeUsers        searchMode = "users"
 )
 
+const githubMaxPageResult = 100
+
 func buildSearchUrl(query string, typee searchMode, opt sortOptions) string {
 
 	switch typee {
@@ -92,10 +93,6 @@ func successfulLoaded(res *http.Response) bool {
 	return true
 }
 
-func getMaxPage(maxResult int) int {
-	return int(math.Round(float64(maxResult) / float64(resultPerPage)))
-}
-
 // SearchRepositories returns channel with Repository for a given search query
 func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult int) <-chan *Repository {
 	channel := make(chan *Repository)
@@ -103,8 +100,8 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 	go func() {
 		defer close(channel)
 		url := buildSearchUrl(query, searchModeRepositories, opt)
-		maxpage := getMaxPage(maxResult)
-		for page := 1; page <= maxpage; page++ {
+		var resultCount int
+		for page := 1; page <= githubMaxPageResult; page++ {
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Repository{Error: err}
@@ -135,7 +132,7 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 				selection.Find("a.topic-tag").Each(func(itag int, selectiontag *goquery.Selection) {
 					repo.Topics = append(repo.Topics, selectiontag.Text()) // each tags topics
 				})
-
+				resultCount++
 				channel <- &repo
 			})
 			res.Body.Close()
@@ -156,8 +153,8 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 	go func() {
 		defer close(channel)
 		url := buildSearchUrl(query, searchModeCommits, opt)
-		maxpage := getMaxPage(maxResult)
-		for page := 1; page <= maxpage; page++ {
+		var resultCount int
+		for page := 1; page <= githubMaxPageResult; page++ {
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Commit{Error: err}
@@ -185,6 +182,7 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 				commit.Author = selection.Find("a.commit-author").Text()
 				commit.CommitDate, _ = selection.Find("relative-time").Attr("datetime")
 
+				resultCount++
 				channel <- &commit
 			})
 			res.Body.Close()
@@ -205,8 +203,8 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 	go func() {
 		defer close(channel)
 		url := buildSearchUrl(query, searchModeIssues, opt)
-		maxpage := getMaxPage(maxResult)
-		for page := 1; page <= maxpage; page++ {
+		var resultCount int
+		for page := 1; page <= githubMaxPageResult; page++ {
 			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Issue{Error: err}
@@ -246,6 +244,7 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 				issue.Author = selection.Find("div.d-inline > a.text-bold.muted-link").Text()
 				issue.Date, _ = selection.Find("relative-time").Attr("datetime")
 
+				resultCount++
 				channel <- &issue
 			})
 			res.Body.Close()
@@ -266,8 +265,8 @@ func (s *Scraper) SearchUsers(opt sortOptions, query string, maxResult int) <-ch
 	go func() {
 		defer close(channel)
 		urll := buildSearchUrl(query, searchModeUsers, opt)
-		maxPage := getMaxPage(maxResult)
-		for page := 1; page <= maxPage; page++ {
+		var resultCount int
+		for page := 1; page <= githubMaxPageResult; page++ {
 			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &User{Error: err}
@@ -310,6 +309,7 @@ func (s *Scraper) SearchUsers(opt sortOptions, query string, maxResult int) <-ch
 					user.Avatar = u.String()
 				}
 
+				resultCount++
 				channel <- &user
 			})
 			res.Body.Close()
