@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	resultPerPage int = 10
-	githubBaseUrl     = "https://github.com"
+	githubBaseUrl       = "https://github.com"
+	githubMaxPageResult = 100
 )
 
 type Repository struct {
@@ -27,13 +27,13 @@ type Repository struct {
 }
 
 type Commit struct {
-	RepositoryName string
-	RepositoryLink string
-	CommitLink     string
-	CommitMessage  string
-	Author         string
-	CommitDate     string
-	Error          error
+	RepositoryName string `json:"repository_name"`
+	RepositoryLink string `json:"repository_link"`
+	CommitLink     string `json:"commit_link"`
+	CommitMessage  string `json:"commit_message"`
+	Author         string `json:"author"`
+	CommitDate     string `json:"commit_date"`
+	Error          error  `json:"error"`
 }
 
 type Issue struct {
@@ -74,8 +74,6 @@ const (
 	searchModeUsers        searchMode = "users"
 )
 
-const githubMaxPageResult = 100
-
 func buildSearchUrl(query string, typee searchMode, opt sortOptions) string {
 
 	switch typee {
@@ -99,14 +97,14 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 
 	go func() {
 		defer close(channel)
-		url := buildSearchUrl(query, searchModeRepositories, opt)
+		urll := buildSearchUrl(query, searchModeRepositories, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
 			if resultCount == maxResult {
 				channel <- &Repository{Error: errors.New("maxResult")}
 				return
 			}
-			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
+			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Repository{Error: err}
 				return
@@ -134,7 +132,7 @@ func (s *Scraper) SearchRepositories(opt sortOptions, query string, maxResult in
 				repo.Description = selection.Find("p.mb-1").Text()                                 //description
 				repo.Stars = selection.Find("div.mr-3 > a.muted-link").Text()                      //stars
 				repo.ProgrammingLanguage = selection.Find("[itemprop=programmingLanguage]").Text() //programmingLanguage
-				repo.UpdateTime, _ = selection.Find("relative-time").Attr("datetime")              //updatedtime
+				repo.UpdateTime, _ = selection.Find("relative-time").Attr("datetime")              //updatedTime
 
 				selection.Find("a.topic-tag").Each(func(itag int, selectiontag *goquery.Selection) {
 					repo.Topics = append(repo.Topics, selectiontag.Text()) // each tags topics
@@ -159,14 +157,14 @@ func (s *Scraper) SearchCommits(opt sortOptions, query string, maxResult int) <-
 
 	go func() {
 		defer close(channel)
-		url := buildSearchUrl(query, searchModeCommits, opt)
+		urll := buildSearchUrl(query, searchModeCommits, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
 			if resultCount == maxResult {
 				channel <- &Commit{Error: errors.New("maxResult")}
 				return
 			}
-			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
+			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Commit{Error: err}
 				return
@@ -216,14 +214,14 @@ func (s *Scraper) SearchIssues(opt sortOptions, query string, maxResult int) <-c
 
 	go func() {
 		defer close(channel)
-		url := buildSearchUrl(query, searchModeIssues, opt)
+		urll := buildSearchUrl(query, searchModeIssues, opt)
 		var resultCount int
 		for page := 1; page <= githubMaxPageResult; page++ {
 			if resultCount == maxResult {
 				channel <- &Issue{Error: errors.New("maxResult")}
 				return
 			}
-			res, err := s.client.Get(url + fmt.Sprintf("&p=%v", page))
+			res, err := s.client.Get(urll + fmt.Sprintf("&p=%v", page))
 			if err != nil {
 				channel <- &Issue{Error: err}
 				return
